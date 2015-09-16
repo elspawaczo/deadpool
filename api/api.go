@@ -21,6 +21,6 @@ func respond(w http.ResponseWriter, r *http.Request, status int, data interface{
 	}
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "#?!")
 }

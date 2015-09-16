@@ -1,19 +1,38 @@
+# Ubuntu just works
 FROM alpine:3.2
+MAINTAINER SOON_ <dorks@thisissoon.com>
 
+## Environment Variables
+ENV GOPATH /deadpool
+ENV GOBIN /usr/local/bin
+ENV PATH $PATH:$GOPATH/bin
+
+# OS Dependencies
 RUN echo 'http://dl-4.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
-    && apk update && apk add go git ca-certificates make && rm -rf /var/cache/apk/* \
-    && wget -P /usr/local/bin http://public.thisissoon.com.s3.amazonaws.com/glide \
-    && chmod +x /usr/local/bin/glide
+    && apk update && apk add go go-tools git ca-certificates make bash && rm -rf /var/cache/apk/*
 
-ENV GOPATH=/deadpool
+# Set working Directory
+WORKDIR /deadpool
 
-RUN go get github.com/gorilla/mux
-EXPOSE 80
+# GPM (Go Package Manager)
+RUN git clone https://github.com/pote/gpm.git \
+    && cd gpm \
+    && git checkout v1.3.2 \
+    && ./configure \
+    && make install
 
+# Install Dependencies
+COPY ./Godeps /deadpool/Godeps
+RUN gpm install
+
+# Set our final working dir to be where the source code lives
 WORKDIR /deadpool/src/github.com/thisissoon/deadpool
+
+# Set the default entrypoint to be deadpool
+ENTRYPOINT ["main"]
+
+# Copy source code into the deadpool src directory so Go can build the package
 COPY . /deadpool/src/github.com/thisissoon/deadpool
 
-RUN make install
-RUN ln -s /deadpool/bin/deadpool /usr/local/bin/deadpool
-
-ENTRYPOINT deadpool
+# Install the go package
+RUN go install ./main.go
