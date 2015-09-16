@@ -1,0 +1,33 @@
+machine:
+  services:
+    - docker
+  environment:
+    REPO: soon/deadpool
+    TAG: $(sed 's/master/prod/;s/develop/latest/;s/\//\-/' <<<$CIRCLE_BRANCH)
+
+dependencies:
+  pre:
+    - docker login --username=$DOCKER_USER --password=$DOCKER_PASS --email=$DOCKER_EMAIL
+  override:
+    - docker build -t $REPO .
+
+test:
+  override:
+    - docker run -it --entrypoint go -v $(pwd):/deadpool/src/github.com/thisissoon/deadpool $REPO test ./...
+
+deployment:
+  prod:
+    branch: master
+    commands:
+      - docker push $REPO:prod
+
+  qa:
+    branch: /release\/.*/
+    commands:
+      - docker tag $REPO:$TAG $REPO:qa
+      - docker push $REPO:qa
+
+  latest:
+    branch: develop
+    commands:
+      - docker push $REPO:latest

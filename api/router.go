@@ -6,7 +6,7 @@ import (
 
 func RouterFactory() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/report", handler)
+	r.HandleFunc("/report", httpReportHandler)
 
 	return r
 }
