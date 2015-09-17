@@ -13,16 +13,17 @@ type Report struct {
 	Description  string `json:"description"`
 }
 
-func UnmarshalReport(data []byte, r *Report) error {
+func UnmarshalReport(data []byte) (*Report, error) {
+	r := &Report{}
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error("Incorrect JSON %v", data)
 		}
 	}()
 
-	err := json.Unmarshal(data, r)
-	if err != nil {
-		return err
+	if err := json.Unmarshal(data, r); err != nil {
+		return nil, err
 	}
-	return nil
+
+	return r, nil
 }

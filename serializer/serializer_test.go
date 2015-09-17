@@ -17,8 +17,7 @@ var testReport string = `
 `
 
 func TestUnmarshalReport(t *testing.T) {
-	var rep Report
-	err := UnmarshalReport([]byte(testReport), &rep)
+	rep, err := UnmarshalReport([]byte(testReport))
 	assert.Nil(t, err, err)
 	assert.Equal(t, "request body", rep.HttpRequest)
 	assert.Equal(t, "respond body", rep.HttpResponse)
@@ -28,7 +27,6 @@ func TestUnmarshalReport(t *testing.T) {
 }
 
 func TestUnmarshalCrippledJson(t *testing.T) {
-	var rep Report
-	err := UnmarshalReport([]byte(`{"request": "request body}`), &rep)
+	_, err := UnmarshalReport([]byte(`{"request": "request body}`))
 	assert.NotNil(t, err, "Error is not nil")
 }
