@@ -16,7 +16,7 @@ func TestHttpResponseHandler(t *testing.T) {
 	server := httptest.NewServer(RouterFactory())
 	defer server.Close()
 
-	req, err := http.NewRequest("GET", server.URL+"/report", nil)
+	req, err := http.NewRequest("POST", server.URL+"/report", nil)
 	assert.NoError(t, err)
 
 	res, err := http.DefaultClient.Do(req)
