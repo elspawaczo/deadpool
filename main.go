@@ -8,9 +8,8 @@ import (
 )
 
 func main() {
-
 	r := api.RouterFactory()
 
-	log.Info("Deadpool is running")
+	log.Info("DeadPool is running")
 	http.ListenAndServe(":8000", r)
 }
