@@ -29,10 +29,10 @@ RUN gpm install
 WORKDIR /deadpool/src/github.com/thisissoon/deadpool
 
 # Set the default entrypoint to be deadpool
-ENTRYPOINT ["main"]
+ENTRYPOINT ["deadpool"]
 
 # Copy source code into the deadpool src directory so Go can build the package
 COPY . /deadpool/src/github.com/thisissoon/deadpool
 
 # Install the go package
-RUN go install ./main.go
+RUN go install

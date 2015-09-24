@@ -5,3 +5,6 @@
 github.com/gorilla/mux              49c024275504f0341e5a9971eb7ba7fa3dc7af40  # Sep 8, 2015
 github.com/stretchr/testify/assert  master
 github.com/Sirupsen/logrus          v0.7.3
+github.com/mattes/migrate           master
+upper.io/db                         master
+upper.io/db/postgresql              master

@@ -1,0 +1,20 @@
+app:
+  image: soon/deadpool
+  ports:
+    - 8000:8000
+  expose:
+    - 8000
+  links:
+    - postgres:database
+  environment:
+    - DATABASE_URI=postgres://postgres:mysecretpassword@database:5432/deadpool
+
+
+postgres:
+  image: postgres
+  ports:
+    - 5432:5432
+  expose:
+    - 5432
+  environment:
+    - POSTGRES_PASSWORD=mysecretpassword
