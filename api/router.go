@@ -6,7 +6,6 @@ import (
 
 func RouterFactory() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/report", httpReportHandler)
-
+	r.HandleFunc("/report", httpSaveReportHandler).Methods("POST")
 	return r
 }
