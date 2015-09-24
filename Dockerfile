@@ -9,7 +9,7 @@ ENV PATH $PATH:$GOPATH/bin
 
 # OS Dependencies
 RUN echo 'http://dl-4.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
-    && apk update && apk add go go-tools git ca-certificates make bash && rm -rf /var/cache/apk/*
+    && apk update && apk add go go-tools git gcc g++ ca-certificates make bash && rm -rf /var/cache/apk/*
 
 # Set working Directory
 WORKDIR /deadpool
@@ -23,7 +23,7 @@ RUN git clone https://github.com/pote/gpm.git \
 
 # Install Dependencies
 COPY ./Godeps /deadpool/Godeps
-RUN gpm install
+RUN gpm install && go get upper.io/db/postgresql
 
 # Set our final working dir to be where the source code lives
 WORKDIR /deadpool/src/github.com/thisissoon/deadpool

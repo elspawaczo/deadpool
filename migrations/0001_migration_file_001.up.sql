@@ -1,8 +1,5 @@
-CREATE TABLE report (
-    code        char(5) CONSTRAINT firstkey PRIMARY KEY,
-    title       varchar(40) NOT NULL,
-    did         integer NOT NULL,
-    date_prod   date,
-    kind        varchar(10),
-    len         interval hour to minute
+CREATE TABLE demo (
+    first_name  varchar(40) NOT NULL,
+    last_name   varchar(40) NOT NULL,
+    bio         varchar(40) NOT NULL
 );
