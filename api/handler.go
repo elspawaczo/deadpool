@@ -25,6 +25,79 @@ func init() {
 	flag.Parse()
 }
 
+type ReportRest struct {
+	sess db.Database
+}
+
+func (self ReportRest) Get(w http.ResponseWriter, r *http.Request) {
+	col, err := self.sess.Collection("report")
+	if err != nil {
+		log.Fatal("Getting collection from db: ", err)
+		http.Error(w, "oops", http.StatusBadRequest)
+		return
+	}
+
+	reps := col.Find()
+	var reports []Report
+	reps.All(&reports)
+
+	doc, _ := json.Marshal(reports)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(doc)
+}
+
+func (self ReportRest) Post(w http.ResponseWriter, r *http.Request) {
+	col, err := self.sess.Collection("report")
+	if err != nil {
+		log.Fatal("Getting collection from db: ", err)
+		http.Error(w, "oops", http.StatusBadRequest)
+		return
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r.Body)
+	rep, err := serializer.UnmarshalReport(buf.Bytes())
+	if err != nil {
+		log.Error("Unmarshal report: ", err)
+		http.Error(w, "oops", 422)
+		return
+	}
+
+	rrr := Report{
+		Origin:        rep.Origin,
+		Method:        rep.Method,
+		Status:        rep.Status,
+		ContentType:   rep.ContentType,
+		ContentLength: rep.ContentLength,
+		Host:          rep.Host,
+		URL:           rep.URL,
+		Scheme:        rep.Scheme,
+		Path:          rep.Path,
+		Body:          rep.Body,
+		RequestBody:   rep.RequestBody,
+		DateStart:     rep.DateStart,
+		DateEnd:       rep.DateEnd,
+		TimeTaken:     rep.TimeTaken,
+	}
+	if _, err := col.Append(&rrr); err != nil {
+		log.Fatal("Save data to database error: ", err)
+		http.Error(w, "oops", http.StatusBadRequest)
+		return
+	}
+	log.Info("data saved: ", rrr)
+
+	doc, err := json.Marshal(rrr)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Error(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write(doc)
+}
+
 func withDb(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -58,64 +131,23 @@ func withDb(f http.HandlerFunc) http.HandlerFunc {
 
 var httpReportHandler = withDb(
 	func(w http.ResponseWriter, r *http.Request) {
-		var err error
 		var sess db.Database
-		var col db.Collection
 
 		sess = context.Get(r, "db").(db.Database)
 		if sess == nil {
-			log.Error("err?")
+			log.Error("Cannot get `db` context")
 			http.Error(w, "oops", http.StatusBadRequest)
 			return
 		}
 
-		col, err = sess.Collection("report")
-		if err != nil {
-			log.Fatal("Getting collection from db: ", err)
-			http.Error(w, "oops", http.StatusBadRequest)
-			return
+		api := ReportRest{sess: sess}
+		switch {
+		case r.Method == "POST":
+			api.Post(w, r)
+		case r.Method == "GET":
+			api.Get(w, r)
+		default:
+			http.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
-
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(r.Body)
-		rep, err := serializer.UnmarshalReport(buf.Bytes())
-		if err != nil {
-			log.Error("Unmarshal report: ", err)
-			http.Error(w, "oops", 422)
-			return
-		}
-
-		rrr := Report{
-			Origin:        rep.Origin,
-			Method:        rep.Method,
-			Status:        rep.Status,
-			ContentType:   rep.ContentType,
-			ContentLength: rep.ContentLength,
-			Host:          rep.Host,
-			URL:           rep.URL,
-			Scheme:        rep.Scheme,
-			Path:          rep.Path,
-			Body:          rep.Body,
-			RequestBody:   rep.RequestBody,
-			DateStart:     rep.DateStart,
-			DateEnd:       rep.DateEnd,
-			TimeTaken:     rep.TimeTaken,
-		}
-		if _, err := col.Append(&rrr); err != nil {
-			log.Fatal("Save data to database error: ", err)
-			http.Error(w, "oops", http.StatusBadRequest)
-			return
-		}
-		log.Info("data saved: ", rrr)
-
-		doc, err := json.Marshal(rrr)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Error(err)
-			return
-		}
-
-		w.WriteHeader(http.StatusCreated)
-		w.Write(doc)
 	},
 )

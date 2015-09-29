@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -47,7 +48,7 @@ var testReport string = `
 }
 `
 
-func TestHttpResponseHandler(t *testing.T) {
+func TestCreateNewReport(t *testing.T) {
 	conn := "postgres://postgres:mysecretpassword@172.17.0.1:5432/deadpool"
 	os.Setenv("DATABASE_URI", conn)
 
@@ -57,7 +58,6 @@ func TestHttpResponseHandler(t *testing.T) {
 		bytes.NewBuffer([]byte(testReport)))
 	w := httptest.NewRecorder()
 
-	// Call our handler
 	httpReportHandler(w, r)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -71,4 +71,37 @@ func TestHttpResponseHandler(t *testing.T) {
 	dbRes := reportCollection.Find()
 	c, _ := dbRes.Count()
 	assert.Equal(t, 1, int(c))
+}
+
+func TestGetReports(t *testing.T) {
+	conn := "postgres://postgres:mysecretpassword@172.17.0.1:5432/deadpool"
+	os.Setenv("DATABASE_URI", conn)
+
+	settings, _ := postgresql.ParseURL(conn)
+	sess, _ := db.Open(postgresql.Adapter, settings)
+
+	reportCollection, _ := sess.Collection("report")
+	reportCollection.Append(Report{})
+	reportCollection.Append(Report{})
+	defer reportCollection.Truncate()
+
+	r, _ := http.NewRequest(
+		"GET",
+		"/report",
+		bytes.NewBuffer([]byte(testReport)))
+	w := httptest.NewRecorder()
+
+	httpReportHandler(w, r)
+
+	reps := reportCollection.Find()
+
+	var reports []Report
+	reps.All(&reports)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	c, _ := reps.Count()
+	assert.Equal(t, 2, int(c))
+
+	b, _ := json.Marshal(reports)
+	assert.Equal(t, string(b), w.Body.String())
 }
