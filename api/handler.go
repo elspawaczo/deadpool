@@ -38,27 +38,6 @@ func (p Response) GetMap() hal.Entry {
 	}
 }
 
-func (c Report) GetMap() hal.Entry {
-	return hal.Entry{
-		"id":             c.Id,
-		"origin":         c.Origin,
-		"method":         c.Method,
-		"status":         c.Status,
-		"content_type":   c.ContentType,
-		"content_length": c.ContentLength,
-		"host":           c.Host,
-		"url":            c.URL,
-		"scheme":         c.Scheme,
-		"path":           c.Path,
-		"body":           c.Body,
-		"request_body":   c.RequestBody,
-		"date_start":     c.DateStart,
-		"date_end":       c.DateEnd,
-		"time_taken":     c.TimeTaken,
-		"created":        c.Ts,
-	}
-}
-
 type ReportRest struct {
 	sess db.Database
 }
@@ -103,7 +82,7 @@ func (self ReportRest) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rrr := Report{
+	report := Report{
 		Origin:        rep.Origin,
 		Method:        rep.Method,
 		Status:        rep.Status,
@@ -119,14 +98,14 @@ func (self ReportRest) Post(w http.ResponseWriter, r *http.Request) {
 		DateEnd:       rep.DateEnd,
 		TimeTaken:     rep.TimeTaken,
 	}
-	if _, err := col.Append(&rrr); err != nil {
+	if _, err := col.Append(&report); err != nil {
 		log.Fatal("Save data to database error: ", err)
 		http.Error(w, "oops", http.StatusBadRequest)
 		return
 	}
-	log.Info("data saved: ", rrr)
+	log.Info("data saved: ", report)
 
-	doc, err := json.Marshal(rrr)
+	doc, err := json.Marshal(report)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Error(err)
@@ -141,7 +120,7 @@ func withDb(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Fatal("Panic: ", err, Database_uri)
+				log.Fatal("Panic: ", err, " ", Database_uri)
 				http.Error(w, "oops", http.StatusInternalServerError)
 			}
 		}()
@@ -150,10 +129,9 @@ func withDb(f http.HandlerFunc) http.HandlerFunc {
 		var sess db.Database
 		var settings postgresql.ConnectionURL
 
-		Database_uri := "postgres://postgres:mysecretpassword@172.17.0.1:5432/deadpool"
 		settings, err = postgresql.ParseURL(Database_uri)
 		if err != nil {
-			log.Error("Connection string cannot be parsed ", Database_uri)
+			log.Error("Connection string cannot be parsed: ", Database_uri)
 			http.Error(w, "oops", http.StatusBadRequest)
 		}
 		sess, err = db.Open(postgresql.Adapter, settings)

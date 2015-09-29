@@ -1,9 +1,12 @@
 machine:
   services:
     - docker
+    - postgresql
   environment:
     REPO: soon/deadpool
     TAG: $(sed 's/master/prod/;s/develop/latest/;s/\//\-/' <<<$CIRCLE_BRANCH)
+    DATABASE_URI: postgres://ubuntu@localhost:5432/circle_test
+    VOLUME_PATH: /deadpool/src/github.com/thisissoon/deadpool
 
 dependencies:
   pre:
@@ -13,7 +16,9 @@ dependencies:
 
 test:
   override:
-    - docker run -it --entrypoint go -v $(pwd):/deadpool/src/github.com/thisissoon/deadpool $REPO test ./...
+    - docker run --name migration -it --net=host --entrypoint make -v $(pwd):$VOLUME_PATH -e DATABASE_URI=$DATABASE_URI $REPO migrate
+  post:
+    - docker run --name test -it --net=host --entrypoint go -v $(pwd):$VOLUME_PATH -e DATABASE_URI=$DATABASE_URI $REPO test ./...
 
 deployment:
   prod:

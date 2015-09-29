@@ -9,7 +9,7 @@ ENV PATH $PATH:$GOPATH/bin
 
 # OS Dependencies
 RUN echo 'http://dl-4.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories \
-    && apk update && apk add go go-tools git gcc g++ ca-certificates make bash && rm -rf /var/cache/apk/*
+    && apk update && apk add go go-tools git build-base ca-certificates make bash && rm -rf /var/cache/apk/*
 
 # Set working Directory
 WORKDIR /deadpool

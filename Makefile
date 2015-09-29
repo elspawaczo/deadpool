@@ -1,2 +1,2 @@
 migrate:
-	migrate -url $DATABASE_URI?sslmode=disable -path ./migrations/ up
+	migrate -url $(DATABASE_URI)?sslmode=disable -path ./migrations/ up
