@@ -13,5 +13,6 @@ CREATE TABLE report (
     request_body        text,
     date_start          timestamp,
     date_end            timestamp,
-    time_taken          timestamp
+    time_taken          timestamp,
+    ts                  timestamp default current_timestamp
 );
