@@ -9,6 +9,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
+	"github.com/nvellon/hal"
 	"upper.io/db"
 	"upper.io/db/postgresql"
 
@@ -25,6 +26,39 @@ func init() {
 	flag.Parse()
 }
 
+type Response struct {
+	Count int
+	Total int
+}
+
+func (p Response) GetMap() hal.Entry {
+	return hal.Entry{
+		"count": p.Count,
+		"total": p.Total,
+	}
+}
+
+func (c Report) GetMap() hal.Entry {
+	return hal.Entry{
+		"id":             c.Id,
+		"origin":         c.Origin,
+		"method":         c.Method,
+		"status":         c.Status,
+		"content_type":   c.ContentType,
+		"content_length": c.ContentLength,
+		"host":           c.Host,
+		"url":            c.URL,
+		"scheme":         c.Scheme,
+		"path":           c.Path,
+		"body":           c.Body,
+		"request_body":   c.RequestBody,
+		"date_start":     c.DateStart,
+		"date_end":       c.DateEnd,
+		"time_taken":     c.TimeTaken,
+		"created":        c.Ts,
+	}
+}
+
 type ReportRest struct {
 	sess db.Database
 }
@@ -37,12 +71,17 @@ func (self ReportRest) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reps := col.Find()
+	limit := uint(20)
+	reps := col.Find().Limit(limit)
 	var reports []Report
 	reps.All(&reports)
+	c, _ := reps.Count()
 
-	doc, _ := json.Marshal(reports)
-
+	halDoc := hal.NewResource(Response{Count: len(reports), Total: int(c)}, "")
+	for _, rep := range reports {
+		halDoc.Embed("reports", hal.NewResource(rep, ""))
+	}
+	doc, _ := json.Marshal(halDoc)
 	w.WriteHeader(http.StatusOK)
 	w.Write(doc)
 }

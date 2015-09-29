@@ -7,3 +7,4 @@ github.com/stretchr/testify/assert  master
 github.com/Sirupsen/logrus          v0.7.3
 github.com/mattes/migrate           master
 upper.io/db
+github.com/nvellon/hal              v0.2.0

@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/nvellon/hal"
 	"upper.io/db"
 	"upper.io/db/postgresql"
 
@@ -100,8 +101,10 @@ func TestGetReports(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	c, _ := reps.Count()
-	assert.Equal(t, 2, int(c))
-
-	b, _ := json.Marshal(reports)
-	assert.Equal(t, string(b), w.Body.String())
+	halDoc := hal.NewResource(Response{Count: len(reports), Total: int(c)}, "")
+	for _, rep := range reports {
+		halDoc.Embed("reports", hal.NewResource(rep, ""))
+	}
+	doc, _ := json.Marshal(halDoc)
+	assert.Equal(t, string(doc), w.Body.String())
 }
