@@ -16,5 +16,5 @@ func TestReportRoute(t *testing.T) {
 	assert.NoError(t, err)
 
 	res, err := http.DefaultClient.Do(req)
-	assert.Equal(t, res.StatusCode, http.StatusOK)
+	assert.Equal(t, 422, res.StatusCode)
 }

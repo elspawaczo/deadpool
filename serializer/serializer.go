@@ -12,22 +12,22 @@ type Header struct {
 }
 
 type Report struct {
-	Origin        string    `json:"origin",json"`
-	Method        string    `json:"method",json"`
-	Status        int       `json:"status",json"`
-	ContentType   string    `json:"content_type",json"`
-	ContentLength uint      `json:"content_length",json"`
-	Host          string    `json:"host",json"`
-	URL           string    `json:"url",json"`
-	Scheme        string    `json:"scheme",json"`
+	Origin        string    `json:"origin"`
+	Method        string    `json:"method"`
+	Status        int       `json:"status"`
+	ContentType   string    `json:"content_type"`
+	ContentLength uint      `json:"content_length"`
+	Host          string    `json:"host"`
+	URL           string    `json:"url"`
+	Scheme        string    `json:"scheme"`
 	Path          string    `json:"path",path"`
-	Header        Header    `json:"header",json"`
-	Body          string    `json:"body",json"`
-	RequestHeader Header    `json:"request_header",json"`
-	RequestBody   string    `json:"request_body",json"`
-	DateStart     time.Time `json:"date_start",json"`
-	DateEnd       time.Time `json:"date_end",json"`
-	TimeTaken     time.Time `json:"time_taken",json"`
+	Header        Header    `json:"header"`
+	Body          string    `json:"body"`
+	RequestHeader Header    `json:"request_header"`
+	RequestBody   string    `json:"request_body"`
+	DateStart     time.Time `json:"date_start"`
+	DateEnd       time.Time `json:"date_end"`
+	TimeTaken     time.Time `json:"time_taken"`
 }
 
 func UnmarshalReport(data []byte) (*Report, error) {
